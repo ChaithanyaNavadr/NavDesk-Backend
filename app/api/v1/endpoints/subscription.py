@@ -9,11 +9,11 @@ router = APIRouter(
     tags=["Subscriptions"]
 )
 
-# ✅ Create a new subscription
+# ✅ Create a new subscription (Requires `tenant_id` & `product_id` in the request)
 @router.post("/", response_model=SubscriptionResponse)
 def create_subscription(subscription_data: SubscriptionCreate, db: Session = Depends(get_db)):
     new_subscription = Subscription(
-        user_id=subscription_data.user_id,
+        tenant_id=subscription_data.tenant_id,
         product_id=subscription_data.product_id,
         start_date=subscription_data.start_date,
         end_date=subscription_data.end_date
@@ -43,7 +43,7 @@ def update_subscription(subscription_id: int, subscription_data: SubscriptionUpd
     if not subscription:
         raise HTTPException(status_code=404, detail="Subscription not found")
 
-    subscription.user_id = subscription_data.user_id
+    subscription.tenant_id = subscription_data.tenant_id
     subscription.product_id = subscription_data.product_id
     subscription.start_date = subscription_data.start_date
     subscription.end_date = subscription_data.end_date

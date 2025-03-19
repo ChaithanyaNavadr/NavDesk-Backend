@@ -19,3 +19,4 @@ class Tenant(Base):
     super_admin = relationship("SuperAdmin", back_populates="tenants")
 
     users = relationship("User", back_populates="tenant")
+    subscriptions = relationship("Subscription", back_populates="tenant")  # ✅ Link to subscriptions

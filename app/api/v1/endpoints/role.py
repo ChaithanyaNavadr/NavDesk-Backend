@@ -4,15 +4,9 @@ from app.core.database import SessionLocal
 from app.models.role import Role
 from app.schemas.role import RoleCreate, RoleUpdate, RoleResponse
 from typing import List
+from app.core.database import get_db
 
 router = APIRouter(prefix="/roles", tags=["Roles"])
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.post("/", response_model=RoleResponse)
 def create_role(role: RoleCreate, db: Session = Depends(get_db)):

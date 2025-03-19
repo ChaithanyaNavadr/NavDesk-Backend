@@ -7,11 +7,11 @@ class Subscription(Base):
     __tablename__ = "subscriptions"
 
     subscription_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
+    tenant_id = Column(Integer, ForeignKey("tenants.tenant_id", ondelete="CASCADE"), nullable=False)  # ✅ Changed from user_id
     product_id = Column(Integer, ForeignKey("products.product_id", ondelete="CASCADE"), nullable=False)
     start_date = Column(DateTime, nullable=False, default=datetime.utcnow)
     end_date = Column(DateTime, nullable=False)
 
     # Relationships
-    user = relationship("User", back_populates="subscriptions")
+    tenant = relationship("Tenant", back_populates="subscriptions")  # ✅ Link to Tenant
     product = relationship("Product", back_populates="subscriptions")

@@ -1,17 +1,28 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 
+# ✅ Schema for creating a subscription
 class SubscriptionCreate(BaseModel):
-    user_id: int
+    tenant_id: int
     product_id: int
     start_date: datetime
     end_date: datetime
 
-class SubscriptionUpdate(SubscriptionCreate):
-    pass
+# ✅ Schema for updating a subscription
+class SubscriptionUpdate(BaseModel):
+    tenant_id: Optional[int] = None
+    product_id: Optional[int] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
 
-class SubscriptionResponse(SubscriptionCreate):
+# ✅ Schema for returning subscription data
+class SubscriptionResponse(BaseModel):
     subscription_id: int
+    tenant_id: int
+    product_id: int
+    start_date: datetime
+    end_date: datetime
 
     class Config:
-        from_attributes = True
+        from_attributes = True  # ✅ Enables ORM compatibility

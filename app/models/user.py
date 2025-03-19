@@ -30,7 +30,7 @@ class User(Base):
     tickets = relationship("Ticket", back_populates="user")
     role = relationship("Role", back_populates="users")
     comments = relationship("Comment", back_populates="user", cascade="all, delete-orphan")
-    subscriptions = relationship("Subscription", back_populates="user", cascade="all, delete-orphan")
+    # subscriptions = relationship("Subscription", back_populates="user", cascade="all, delete-orphan")
 
     # ✅ Function to hash passwords before storing
     @staticmethod

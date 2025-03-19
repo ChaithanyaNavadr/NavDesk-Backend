@@ -4,15 +4,9 @@ from app.core.database import SessionLocal
 from app.models.tenant import Tenant
 from app.schemas.tenant import TenantCreate, TenantUpdate, TenantResponse
 from typing import List
+from app.core.database import get_db
 
 router = APIRouter(prefix="/tenants", tags=["Tenants"])
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.post("/", response_model=TenantResponse, status_code=201)
 def create_tenant(tenant: TenantCreate, db: Session = Depends(get_db)):

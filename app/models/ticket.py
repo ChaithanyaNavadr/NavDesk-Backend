@@ -6,6 +6,8 @@ from app.models.ticket_transfer import TicketTransfer # ✅ Import Transfer mode
 class Ticket(Base):
     __tablename__ = "tickets"
 
+    tenant_id = Column(Integer, ForeignKey("tenants.tenant_id"), nullable=False)
+
     ticket_id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
 

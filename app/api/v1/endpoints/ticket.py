@@ -1,35 +1,63 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.core.database import SessionLocal
+from app.models.priority import Priority
+from app.models.status import Status
 from app.models.ticket import Ticket
 from app.models.user import User
 from app.schemas.ticket import TicketCreate, TicketUpdate, TicketResponse
 from typing import List
-from app.core.auth import get_current_user
+from app.core.dependencies import get_current_user
+from app.core.database import get_db
+
 
 
 router = APIRouter(prefix="/tenants/{tenant_id}/tickets", tags=["Tickets"])
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-@router.post("/", response_model=TicketResponse)
+@router.post("/tickets/", response_model=TicketResponse)
 def create_ticket(
-    tenant_id: str,  # Tenant ID comes from the path
     ticket: TicketCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),  # Get logged-in user
+    current_user: dict = Depends(get_current_user)
 ):
-    tenant_id = current_user.tenant_id  # Auto-detect tenant_id from user
+    """
+    Create a new ticket. `user_id` is taken from JWT token (`sub`).
+    `priority_id` and `status_id` must be valid and exist in the database.
+    """
 
-    new_ticket = Ticket(**ticket.model_dump(), tenant_id=tenant_id)  # ✅ Use user's tenant_id
+    tenant_id = current_user.tenant_id
+    # Extract user_id from JWT token
+    user_id = current_user.user_id
+    # ✅ Convert ForeignKey fields to integers
+    try:
+        priority_id = int(ticket.priority_id)
+        status_id = int(ticket.status_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid ID format: {e}")
+
+    # ✅ Check if priority_id and status_id exist in the database
+    status = db.query(Status).filter(Status.status_id == status_id).first()
+    priority = db.query(Priority).filter(Priority.priority_id == priority_id).first()
+
+    if not status:
+        raise HTTPException(status_code=404, detail="Status not found")
+    if not priority:
+        raise HTTPException(status_code=404, detail="Priority not found")
+
+    # ✅ Create and Save Ticket
+    new_ticket = Ticket(
+        title=ticket.title,
+        description=ticket.description,
+        tenant_id=tenant_id,
+        user_id=user_id,  # Assigned from token
+        priority_id=priority_id,
+        status_id=status_id
+    )
+
     db.add(new_ticket)
     db.commit()
     db.refresh(new_ticket)
+
     return new_ticket
 
 
