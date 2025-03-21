@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.core.database import SessionLocal
+from uuid import UUID
+from app.core.database import get_db
 from app.models.priority import Priority
 from app.models.status import Status
 from app.models.ticket import Ticket
@@ -8,13 +9,10 @@ from app.models.user import User
 from app.schemas.ticket import TicketCreate, TicketUpdate, TicketResponse
 from typing import List
 from app.core.dependencies import get_current_user
-from app.core.database import get_db
-
-
 
 router = APIRouter(prefix="/tenants/{tenant_id}/tickets", tags=["Tickets"])
 
-@router.post("/tickets/", response_model=TicketResponse)
+@router.post("/", response_model=TicketResponse)
 def create_ticket(
     ticket: TicketCreate,
     db: Session = Depends(get_db),
@@ -26,18 +24,11 @@ def create_ticket(
     """
 
     tenant_id = current_user.tenant_id
-    # Extract user_id from JWT token
-    user_id = current_user.user_id
-    # ✅ Convert ForeignKey fields to integers
-    try:
-        priority_id = int(ticket.priority_id)
-        status_id = int(ticket.status_id)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=f"Invalid ID format: {e}")
+    user_id = current_user.user_id  # Extract user_id from JWT token
 
     # ✅ Check if priority_id and status_id exist in the database
-    status = db.query(Status).filter(Status.status_id == status_id).first()
-    priority = db.query(Priority).filter(Priority.priority_id == priority_id).first()
+    status = db.query(Status).filter(Status.status_id == ticket.status_id).first()
+    priority = db.query(Priority).filter(Priority.priority_id == ticket.priority_id).first()
 
     if not status:
         raise HTTPException(status_code=404, detail="Status not found")
@@ -49,9 +40,9 @@ def create_ticket(
         title=ticket.title,
         description=ticket.description,
         tenant_id=tenant_id,
-        user_id=user_id,  # Assigned from token
-        priority_id=priority_id,
-        status_id=status_id
+        user_id=user_id,
+        priority_id=ticket.priority_id,
+        status_id=ticket.status_id
     )
 
     db.add(new_ticket)
@@ -62,19 +53,19 @@ def create_ticket(
 
 
 @router.get("/", response_model=List[TicketResponse])
-def list_tickets(tenant_id: int, db: Session = Depends(get_db)):
+def list_tickets(tenant_id: UUID, db: Session = Depends(get_db)):
     return db.query(Ticket).filter(Ticket.tenant_id == tenant_id).all()
 
 @router.get("/{ticket_id}", response_model=TicketResponse)
-def get_ticket(tenant_id: int, ticket_id: int, db: Session = Depends(get_db)):
-    ticket = db.query(Ticket).filter(Ticket.id == ticket_id, Ticket.tenant_id == tenant_id).first()
+def get_ticket(tenant_id: UUID, ticket_id: UUID, db: Session = Depends(get_db)):
+    ticket = db.query(Ticket).filter(Ticket.ticket_id == ticket_id, Ticket.tenant_id == tenant_id).first()
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
     return ticket
 
 @router.put("/{ticket_id}", response_model=TicketResponse)
-def update_ticket(tenant_id: int, ticket_id: int, ticket_data: TicketUpdate, db: Session = Depends(get_db)):
-    ticket = db.query(Ticket).filter(Ticket.id == ticket_id, Ticket.tenant_id == tenant_id).first()
+def update_ticket(tenant_id: UUID, ticket_id: UUID, ticket_data: TicketUpdate, db: Session = Depends(get_db)):
+    ticket = db.query(Ticket).filter(Ticket.ticket_id == ticket_id, Ticket.tenant_id == tenant_id).first()
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
 
@@ -86,8 +77,8 @@ def update_ticket(tenant_id: int, ticket_id: int, ticket_data: TicketUpdate, db:
     return ticket
 
 @router.delete("/{ticket_id}", status_code=204)
-def delete_ticket(tenant_id: int, ticket_id: int, db: Session = Depends(get_db)):
-    ticket = db.query(Ticket).filter(Ticket.id == ticket_id, Ticket.tenant_id == tenant_id).first()
+def delete_ticket(tenant_id: UUID, ticket_id: UUID, db: Session = Depends(get_db)):
+    ticket = db.query(Ticket).filter(Ticket.ticket_id == ticket_id, Ticket.tenant_id == tenant_id).first()
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
 

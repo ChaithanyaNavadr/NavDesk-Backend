@@ -1,3 +1,4 @@
+from uuid import UUID
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
@@ -17,10 +18,10 @@ class TicketUpdate(BaseModel):
 
 # ✅ Response Schema for Returning Ticket Data
 class TicketResponse(BaseModel):
-    ticket_id: int
+    ticket_id: UUID
     title: str
     description: str
-    user_id: int  # Extracted from JWT token
+    user_id: UUID  # Extracted from JWT token
     priority_id: int
     status_id: int
     created_at: datetime  # Auto-generated timestamp

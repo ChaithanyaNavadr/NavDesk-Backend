@@ -1,9 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
-from fastapi.openapi.models import OAuth2 as OAuth2Model
-from fastapi.security import OAuth2PasswordBearer
 from fastapi.openapi.utils import get_openapi
+from fastapi.security import OAuth2PasswordBearer
 
 from app.api.v1.endpoints import (
     comment, product, role, priority, status, subscription, 
@@ -21,7 +19,7 @@ def custom_openapi():
         return app.openapi_schema
 
     openapi_schema = get_openapi(
-        title="FastAPI Ticket System",
+        title="Ticket Management System",
         version="1.0.0",
         description="API documentation for NavDesk Ticket System",
         routes=app.routes,
@@ -36,8 +34,11 @@ def custom_openapi():
         }
     }
 
-    for path in openapi_schema["paths"].values():
-        for method in path.values():
+    # ✅ Apply authorization to all routes except "Users"
+    for path, methods in openapi_schema["paths"].items():
+        if path.startswith("/api/users"):  # Exclude users' endpoints from requiring auth
+            continue
+        for method in methods.values():
             security = method.get("security", [])
             security.append({"BearerAuth": []})
             method["security"] = security

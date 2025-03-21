@@ -1,3 +1,5 @@
+import uuid
+from sqlalchemy.dialects.postgresql import UUID  # ✅ Use dialect-specific UUID
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, func
 from sqlalchemy.orm import relationship
 from app.core.database import Base
@@ -5,7 +7,7 @@ from app.core.database import Base
 class Tenant(Base):
     __tablename__ = "tenants"
 
-    tenant_id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     name = Column(String(100), nullable=False)
     description = Column(String(255), nullable=True)
     status = Column(String(50), default="active", nullable=False)

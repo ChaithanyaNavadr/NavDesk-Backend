@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from uuid import UUID
 from app.core.database import get_db
 from app.models.ticket_transfer import TicketTransfer
 from app.schemas.ticket_transfer import TicketTransferCreate, TicketTransferResponse
@@ -28,9 +29,9 @@ def create_ticket_transfer(transfer_data: TicketTransferCreate, db: Session = De
 def get_ticket_transfers(db: Session = Depends(get_db)):
     return db.query(TicketTransfer).all()
 
-# ✅ Get a specific ticket transfer by ID
+# ✅ Get a specific ticket transfer by UUID
 @router.get("/{transfer_id}", response_model=TicketTransferResponse)
-def get_ticket_transfer(transfer_id: int, db: Session = Depends(get_db)):
+def get_ticket_transfer(transfer_id: UUID, db: Session = Depends(get_db)):
     transfer = db.query(TicketTransfer).filter(TicketTransfer.transfer_id == transfer_id).first()
     if not transfer:
         raise HTTPException(status_code=404, detail="Ticket transfer not found")
@@ -38,7 +39,7 @@ def get_ticket_transfer(transfer_id: int, db: Session = Depends(get_db)):
 
 # ✅ Delete a ticket transfer
 @router.delete("/{transfer_id}")
-def delete_ticket_transfer(transfer_id: int, db: Session = Depends(get_db)):
+def delete_ticket_transfer(transfer_id: UUID, db: Session = Depends(get_db)):
     transfer = db.query(TicketTransfer).filter(TicketTransfer.transfer_id == transfer_id).first()
     if not transfer:
         raise HTTPException(status_code=404, detail="Ticket transfer not found")

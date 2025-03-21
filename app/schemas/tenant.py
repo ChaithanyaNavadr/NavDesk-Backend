@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
 
+from uuid import UUID
+
 class TenantBase(BaseModel):
     name: str
     description: Optional[str] = None
@@ -16,7 +18,7 @@ class TenantUpdate(TenantBase):
     pass
 
 class TenantResponse(BaseModel):
-    tenant_id: int  # ✅ Ensure this field matches your DB column
+    tenant_id: UUID  # ✅ Ensure this field matches your DB column
     name: str
     description: Optional[str] = None
     status: bool

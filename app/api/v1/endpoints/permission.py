@@ -1,5 +1,7 @@
+import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from uuid import UUID
 from app.core.database import get_db
 from app.models.permission import Permission
 from app.schemas.permission import PermissionCreate, PermissionResponse
@@ -29,7 +31,7 @@ def get_permissions(db: Session = Depends(get_db)):
 
 # ✅ Get a specific permission by ID
 @router.get("/{permission_id}", response_model=PermissionResponse)
-def get_permission(permission_id: int, db: Session = Depends(get_db)):
+def get_permission(permission_id: UUID, db: Session = Depends(get_db)):
     permission = db.query(Permission).filter(Permission.permission_id == permission_id).first()
     if not permission:
         raise HTTPException(status_code=404, detail="Permission not found")
@@ -37,7 +39,7 @@ def get_permission(permission_id: int, db: Session = Depends(get_db)):
 
 # ✅ Update a permission
 @router.put("/{permission_id}", response_model=PermissionResponse)
-def update_permission(permission_id: int, permission_data: PermissionCreate, db: Session = Depends(get_db)):
+def update_permission(permission_id: UUID, permission_data: PermissionCreate, db: Session = Depends(get_db)):
     permission = db.query(Permission).filter(Permission.permission_id == permission_id).first()
     if not permission:
         raise HTTPException(status_code=404, detail="Permission not found")
@@ -49,7 +51,7 @@ def update_permission(permission_id: int, permission_data: PermissionCreate, db:
 
 # ✅ Delete a permission
 @router.delete("/{permission_id}")
-def delete_permission(permission_id: int, db: Session = Depends(get_db)):
+def delete_permission(permission_id: UUID, db: Session = Depends(get_db)):
     permission = db.query(Permission).filter(Permission.permission_id == permission_id).first()
     if not permission:
         raise HTTPException(status_code=404, detail="Permission not found")

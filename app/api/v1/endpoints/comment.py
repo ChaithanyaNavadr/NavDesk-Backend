@@ -4,6 +4,7 @@ from app.core.database import get_db
 from app.models.comment import Comment
 from app.schemas.comment import CommentCreate, CommentResponse
 from app.models.ticket import Ticket
+from uuid import UUID
 
 router = APIRouter()
 
@@ -28,16 +29,16 @@ def get_comments(db: Session = Depends(get_db)):
 
 # ✅ Get a specific comment by ID
 @router.get("/{comment_id}", response_model=CommentResponse)
-def get_comment(comment_id: int, db: Session = Depends(get_db)):
-    comment = db.query(Comment).filter(Comment.id == comment_id).first()
+def get_comment(comment_id: UUID, db: Session = Depends(get_db)):
+    comment = db.query(Comment).filter(Comment.comment_id == comment_id).first()
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
     return comment
 
 # ✅ Update a comment
 @router.put("/{comment_id}", response_model=CommentResponse)
-def update_comment(comment_id: int, comment_data: CommentCreate, db: Session = Depends(get_db)):
-    comment = db.query(Comment).filter(Comment.id == comment_id).first()
+def update_comment(comment_id: UUID, comment_data: CommentCreate, db: Session = Depends(get_db)):
+    comment = db.query(Comment).filter(Comment.comment_id == comment_id).first()
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
 
@@ -48,8 +49,8 @@ def update_comment(comment_id: int, comment_data: CommentCreate, db: Session = D
 
 # ✅ Delete a comment
 @router.delete("/{comment_id}")
-def delete_comment(comment_id: int, db: Session = Depends(get_db)):
-    comment = db.query(Comment).filter(Comment.id == comment_id).first()
+def delete_comment(comment_id: UUID, db: Session = Depends(get_db)):
+    comment = db.query(Comment).filter(Comment.comment_id == comment_id).first()
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
 
