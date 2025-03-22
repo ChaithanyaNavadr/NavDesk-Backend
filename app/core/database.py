@@ -28,3 +28,11 @@ def get_db():
 
 # Metadata for Alembic migrations
 metadata = Base.metadata
+
+def test_connection():
+    """Test the database connection."""
+    try:
+        engine.connect()
+        return True
+    except:
+        return False
